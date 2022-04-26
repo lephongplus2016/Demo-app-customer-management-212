@@ -42,7 +42,8 @@ controller.update = (req, res) => {
   req.getConnection((err, conn) => {
 
   conn.query('UPDATE customer set ? where id = ?', [newCustomer, id], (err, rows) => {
-    res.redirect('/');
+    req.flash('success', 'Edit customer successfully',false);
+    res.redirect(`/update/${id}`);
   });
   });
 };
