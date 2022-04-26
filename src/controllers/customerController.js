@@ -19,6 +19,7 @@ controller.save = (req, res) => {
   req.getConnection((err, connection) => {
     const query = connection.query('INSERT INTO customer set ?', data, (err, customer) => {
       console.log(customer)
+      req.flash('success', 'Add customer successfully',false);
       res.redirect('/');
     })
   })
@@ -50,9 +51,12 @@ controller.delete = (req, res) => {
   const { id } = req.params;
   req.getConnection((err, connection) => {
     connection.query('DELETE FROM customer WHERE id = ?', [id], (err, rows) => {
+      req.flash('info', 'Delete customer successfully',false);
       res.redirect('/');
     });
   });
 }
+
+
 
 module.exports = controller;

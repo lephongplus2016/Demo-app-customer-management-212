@@ -4,7 +4,13 @@ const express = require('express'),
       mysql = require('mysql'),
       myConnection = require('express-myconnection');
 
+const flash = require('express-flash-notification');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+
 const app = express();
+
+
 
 // importing routes
 const customerRoutes = require('./routes/customer');
@@ -14,6 +20,17 @@ app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+
+//flash
+app.use(cookieParser());
+app.use(session({
+  secret: 'king',
+  resave: false,
+  saveUninitialized: true
+}));
+app.use(flash(app, {
+  viewName:  'elements/notify',
+}));
 // middlewares
 app.use(morgan('dev'));
 app.use(myConnection(mysql, {
