@@ -1,8 +1,13 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const path = require('path');
 const PORT = process.env.PORT || 3000;
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
 const oracledb = require('oracledb');
+const { log } = require('console');
 oracledb.autoCommit = true; //Commita queries
 
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -18,23 +23,54 @@ const dbConfig = {
     poolIncrement: 0
 };
 //-------------------------------------CRUD
-app.get('/find', (req, res) => {
+// app.get('/find', (req, res) => {
+//     let users = new Array();
+//     let connection;
+//     oracledb.getConnection(dbConfig)
+//     .then((c) => {
+//         connection = c;
+//         return connection.execute("select * from users");
+//     })
+//     .then((result) => {
+//         result.rows.forEach((elemento) => {
+//             let user = new Object();
+//             user.id = elemento[0];
+//             user.name= elemento[1];
+//             user.password= elemento[2];
+//             users.push(user);
+//         });
+//         res.status(200).json(users);
+//     }).then(()=>{
+//         if(connection){
+//             connection.close();
+//         }
+//     }).catch((error)=>{
+//         res.status(500).json({ message: error.message || "Some error occurred!" });
+//     });
+// });
+
+app.get('/', (req, res) => {
     let users = new Array();
     let connection;
     oracledb.getConnection(dbConfig)
     .then((c) => {
         connection = c;
-        return connection.execute("select * from users");
+        return connection.execute("select * from customer");
     })
     .then((result) => {
+        console.log(result);
         result.rows.forEach((elemento) => {
             let user = new Object();
-            user.id = elemento[0];
-            user.name= elemento[1];
-            user.password= elemento[2];
+            user.name = elemento[1];
+            user.address= elemento[2];
+            user.phone= elemento[3];
+            user.email= elemento[4];
             users.push(user);
+            
         });
-        res.status(200).json(users);
+        res.render('customers', {
+            data: users
+         });
     }).then(()=>{
         if(connection){
             connection.close();
@@ -43,6 +79,23 @@ app.get('/find', (req, res) => {
         res.status(500).json({ message: error.message || "Some error occurred!" });
     });
 });
+
+// app.get('/',async (req, res) => {
+//     let connection;
+//     connection = await oracledb.getConnection(dbConfig);
+//     connection.execute(
+//         `SELECT *
+//          FROM customer`,
+//         [],  
+//        function(err, result) {
+//           if (err) {
+//             console.error(err.message);
+//             return;
+//           }
+//           console.log(result);
+//        });
+//    });
+
 
 app.get('/find/:userId', (req, res) => {
     let connection;
