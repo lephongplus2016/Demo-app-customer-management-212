@@ -56,8 +56,12 @@ controller.update = (req, res) => {
   const { id } = req.params;
   const newCustomer = req.body;
   req.getConnection((err, conn) => {
+  var pre_query = new Date().getTime();
   conn.query(`UPDATE ${table_name} set ? where id = ?`, [newCustomer, id], (err, rows) => {
-    req.flash('success', 'Edit customer successfully',false);
+    var post_query = new Date().getTime();
+    var update_time = (post_query - pre_query) / 1000;
+    console.log('Time to update: ', update_time);
+    req.flash('success', `Edit customer successfully - Time to excute: ${update_time} second`,false);
     res.redirect(`/update/${id}`);
   });
   });
