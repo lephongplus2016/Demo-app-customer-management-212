@@ -1,13 +1,25 @@
 const controller = {};
+// innoDB: customer  
+// myisam :customer_myisam   
+var table_name = 'customer';
 
 controller.list = (req, res) => {
   req.getConnection((err, conn) => {
-    conn.query('SELECT * FROM customer', (err, customers) => {
+    // get a timestamp before running the query
+    var pre_query = new Date().getTime();
+    conn.query(`SELECT * FROM ${table_name}`, (err, customers) => {
      if (err) {
       res.json(err);
      }
+     // get a timestamp after running the query
+    var post_query = new Date().getTime();
+    // calculate the duration in seconds
+    var duration = (post_query - pre_query) / 1000;
+    console.log("Time load all records",duration);
+
      res.render('customers', {
-        data: customers
+        data: customers,
+        time_to_query: duration
      });
     });
   });
@@ -17,9 +29,13 @@ controller.save = (req, res) => {
   const data = req.body;
   console.log(req.body)
   req.getConnection((err, connection) => {
-    const query = connection.query('INSERT INTO customer set ?', data, (err, customer) => {
-      console.log(customer)
-      req.flash('success', 'Add customer successfully',false);
+    var pre_query = new Date().getTime();
+    const query = connection.query(`INSERT INTO ${table_name} set ?`, data, (err, customer) => {
+      // console.log(customer)
+      var post_query = new Date().getTime();
+      var insert_time = (post_query - pre_query) / 1000;
+      console.log('Time to insert: ', insert_time);
+      req.flash('success', `Add customer successfully - Time to excute: ${insert_time} second`,false);
       res.redirect('/');
     })
   })
@@ -28,7 +44,7 @@ controller.save = (req, res) => {
 controller.edit = (req, res) => {
   const { id } = req.params;
   req.getConnection((err, conn) => {
-    conn.query("SELECT * FROM customer WHERE id = ?", [id], (err, rows) => {
+    conn.query(`SELECT * FROM ${table_name} WHERE id = ?`, [id], (err, rows) => {
       res.render('customers_edit', {
         data: rows[0]
       })
@@ -40,8 +56,7 @@ controller.update = (req, res) => {
   const { id } = req.params;
   const newCustomer = req.body;
   req.getConnection((err, conn) => {
-
-  conn.query('UPDATE customer set ? where id = ?', [newCustomer, id], (err, rows) => {
+  conn.query(`UPDATE ${table_name} set ? where id = ?`, [newCustomer, id], (err, rows) => {
     req.flash('success', 'Edit customer successfully',false);
     res.redirect(`/update/${id}`);
   });
@@ -51,7 +66,7 @@ controller.update = (req, res) => {
 controller.delete = (req, res) => {
   const { id } = req.params;
   req.getConnection((err, connection) => {
-    connection.query('DELETE FROM customer WHERE id = ?', [id], (err, rows) => {
+    connection.query(`DELETE FROM ${table_name} WHERE id = ?`, [id], (err, rows) => {
       req.flash('info', 'Delete customer successfully',false);
       res.redirect('/');
     });
